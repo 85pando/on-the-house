@@ -1,9 +1,11 @@
 #!/bin/sh
 
-OTHURL="https://www.origin.com/en-de/store/free-games/on-the-house"
+#OTHURL="https://www.origin.com/en-de/store/free-games/on-the-house"
+OTHURL="https://www.origin.com/deu/en-us/store/free-games/on-the-house"
 OTHFILE="/tmp/oth"
 OTHFILEOLD="${OTHFILE}-old"
-SEDEXPRESSION="s:.*<h5><a.*>\(.*\)</a></h5>.*:\1:g"
+#SEDEXPRESSION="s:.*<h5><a.*>\(.*\)</a></h5>.*:\1:g"
+SEDEXPRESSION="s:.*<a class=\"origin-store-program-offer-title\".*>\(.*\)</a>.*:\1:g"
 MAILTEXTEND="Go to https://www.origin.com/en-de/store/free-games/on-the-house if you are interested."
 MAILTO="someone@example.org"
 #MAILTO="someone@example.org,someoneelse@example.de"
@@ -22,15 +24,17 @@ then
 fi
 
 # download the current file
-wget ${OTHURL} -O ${OTHFILE} -o /dev/null
+#wget ${OTHURL} -O ${OTHFILE} -o /dev/null
+curl ${OTHURL} -o ${OTHFILE}
 
 # It seems that the name of the game is shown in a <h5> tag, so why not just get this out of the file to get the name…
-NEWNAME=$(grep -i "<h5>" ${OTHFILE} | sed "${SEDEXPRESSION}")
+NEWNAME=$(grep -i "origin-store-program-offer-title" ${OTHFILE} | sed "${SEDEXPRESSION}")
 
 # If we have an old file, compare the name in the current file with the name in the old file.
 if ${OTHFILEEXISTS}
 then
-    OLDNAME=$(grep -i "<h5>" ${OTHFILEOLD} | sed "${SEDEXPRESSION}")
+    #OLDNAME=$(grep -i "<h5>" ${OTHFILEOLD} | sed "${SEDEXPRESSION}")
+    OLDNAME=$(grep -i "origin-store-program-offer-title" ${OTHFILEOLD} | sed "${SEDEXPRESSION}")
 
     # If both names are the same, send an email to someone.
     if [ ! "${OLDNAME}" = "${NEWNAME}" ]; then
@@ -49,5 +53,5 @@ fi
 if ${NEEDTOMAIL}
 then
     COMPLETEMAILTEXT="${MAILTEXT}\n${MAILTEXTEND}"
-    echo "${COMPLETEMAILTEXT}" | mail -s "New game found in the Origin on-the-house program." ${MAILTO}
+    echo "${COMPLETEMAILTEXT}" #| mail -s "New game found in the Origin on-the-house program." ${MAILTO}
 fi
